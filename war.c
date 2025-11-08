@@ -1,98 +1,324 @@
-// ============================================================================
-//         PROJETO WAR ESTRUTURADO - DESAFIO DE CÓDIGO
-// ============================================================================
-//        
-// ============================================================================
-//
-// OBJETIVOS:
-// - Modularizar completamente o código em funções especializadas.
-// - Implementar um sistema de missões para um jogador.
-// - Criar uma função para verificar se a missão foi cumprida.
-// - Utilizar passagem por referência (ponteiros) para modificar dados e
-//   passagem por valor/referência constante (const) para apenas ler.
-// - Foco em: Design de software, modularização, const correctness, lógica de jogo.
-//
-// ============================================================================
+#include "war.h"
 
-// Inclusão das bibliotecas padrão necessárias para entrada/saída, alocação de memória, manipulação de strings e tempo.
-
-// --- Constantes Globais ---
-// Definem valores fixos para o número de territórios, missões e tamanho máximo de strings, facilitando a manutenção.
-
-// --- Estrutura de Dados ---
-// Define a estrutura para um território, contendo seu nome, a cor do exército que o domina e o número de tropas.
-
-// --- Protótipos das Funções ---
-// Declarações antecipadas de todas as funções que serão usadas no programa, organizadas por categoria.
-// Funções de setup e gerenciamento de memória:
-// Funções de interface com o usuário:
-// Funções de lógica principal do jogo:
-// Função utilitária:
-
-// --- Função Principal (main) ---
-// Função principal que orquestra o fluxo do jogo, chamando as outras funções em ordem.
-int main() {
-    // 1. Configuração Inicial (Setup):
-    // - Define o locale para português.
-    // - Inicializa a semente para geração de números aleatórios com base no tempo atual.
-    // - Aloca a memória para o mapa do mundo e verifica se a alocação foi bem-sucedida.
-    // - Preenche os territórios com seus dados iniciais (tropas, donos, etc.).
-    // - Define a cor do jogador e sorteia sua missão secreta.
-
-    // 2. Laço Principal do Jogo (Game Loop):
-    // - Roda em um loop 'do-while' que continua até o jogador sair (opção 0) ou vencer.
-    // - A cada iteração, exibe o mapa, a missão e o menu de ações.
-    // - Lê a escolha do jogador e usa um 'switch' para chamar a função apropriada:
-    //   - Opção 1: Inicia a fase de ataque.
-    //   - Opção 2: Verifica se a condição de vitória foi alcançada e informa o jogador.
-    //   - Opção 0: Encerra o jogo.
-    // - Pausa a execução para que o jogador possa ler os resultados antes da próxima rodada.
-
-    // 3. Limpeza:
-    // - Ao final do jogo, libera a memória alocada para o mapa para evitar vazamentos de memória.
-
-    return 0;
+// Função callback para fortificar territórios
+void fortificar_territorio(Territorio* t) {
+    t->exercitos++;
 }
 
-// --- Implementação das Funções ---
+// Função de menu principal
+void exibir_menu() {
+    printf("\n╔════════════════════════════════════════╗\n");
+    printf("║         WAR - NOVA EDIÇÃO              ║\n");
+    printf("╠════════════════════════════════════════╣\n");
+    printf("║ 1. Iniciar Novo Jogo                   ║\n");
+    printf("║ 2. Ver Mapa                            ║\n");
+    printf("║ 3. Ver Estatísticas                    ║\n");
+    printf("║ 4. Simular Ataque                      ║\n");
+    printf("║ 5. Verificar Vitória                   ║\n");
+    printf("║ 6. Demonstração de Recursos Avançados ║\n");
+    printf("║ 0. Sair                                ║\n");
+    printf("╚════════════════════════════════════════╝\n");
+    printf("Escolha uma opção: ");
+}
 
-// alocarMapa():
-// Aloca dinamicamente a memória para o vetor de territórios usando calloc.
-// Retorna um ponteiro para a memória alocada ou NULL em caso de falha.
+void demonstrar_recursos_avancados(Jogo* jogo) {
+    printf("\n╔═══════════════════════════════════════════════════════════╗\n");
+    printf("║  DEMONSTRAÇÃO DE RECURSOS AVANÇADOS                       ║\n");
+    printf("╚═══════════════════════════════════════════════════════════╝\n");
+    
+    // 1. Uso de ponteiros e alocação dinâmica
+    printf("\n[1] Demonstração de Alocação Dinâmica:\n");
+    printf("    - Jogo alocado dinamicamente com malloc\n");
+    printf("    - Endereço da estrutura: %p\n", (void*)jogo);
+    printf("    - Tamanho da estrutura: %lu bytes\n", sizeof(Jogo));
+    
+    // 2. Ponteiros para estruturas
+    printf("\n[2] Demonstração de Ponteiros para Estruturas:\n");
+    Territorio* primeiro_territorio = &jogo->territorios[0];
+    printf("    - Primeiro território: %s\n", primeiro_territorio->nome);
+    printf("    - Endereço: %p\n", (void*)primeiro_territorio);
+    printf("    - Acessando via ponteiro: jogador_id = %d\n", primeiro_territorio->jogador_id);
+    
+    // 3. Funções callback
+    printf("\n[3] Demonstração de Funções Callback:\n");
+    printf("    - Fortificando todos os territórios do Jogador 0...\n");
+    printf("    - Antes da fortificação:\n");
+    for (int i = 0; i < 4 && i < jogo->num_territorios; i++) {
+        if (jogo->territorios[i].jogador_id == 0) {
+            printf("      %s: %d exércitos\n", 
+                   jogo->territorios[i].nome, 
+                   jogo->territorios[i].exercitos);
+        }
+    }
+    
+    aplicar_acao_territorios(jogo, 0, fortificar_territorio);
+    
+    printf("    - Depois da fortificação:\n");
+    for (int i = 0; i < 4 && i < jogo->num_territorios; i++) {
+        if (jogo->territorios[i].jogador_id == 0) {
+            printf("      %s: %d exércitos\n", 
+                   jogo->territorios[i].nome, 
+                   jogo->territorios[i].exercitos);
+        }
+    }
+    
+    // 4. Ponteiros para funções
+    printf("\n[4] Demonstração de Ponteiros para Funções:\n");
+    printf("    - Ordenando territórios por número de exércitos...\n");
+    FuncaoComparacao func_comparar = comparar_exercitos;
+    printf("    - Endereço da função de comparação: %p\n", (void*)func_comparar);
+    
+    // 5. Passagem por referência vs valor
+    printf("\n[5] Demonstração de Passagem por Referência:\n");
+    int exercitos_antes = jogo->territorios[0].exercitos;
+    adicionar_exercitos(jogo, 0, 5);
+    printf("    - Território %s:\n", jogo->territorios[0].nome);
+    printf("      Antes: %d exércitos\n", exercitos_antes);
+    printf("      Depois: %d exércitos (modificado via ponteiro)\n", 
+           jogo->territorios[0].exercitos);
+    
+    // 6. Uso de malloc/calloc/free
+    printf("\n[6] Demonstração de Gerenciamento de Memória:\n");
+    int* array_teste = (int*)malloc(10 * sizeof(int));
+    printf("    - malloc: Alocados 10 inteiros em %p\n", (void*)array_teste);
+    
+    int* array_teste2 = (int*)calloc(10, sizeof(int));
+    printf("    - calloc: Alocados 10 inteiros zerados em %p\n", (void*)array_teste2);
+    printf("    - Primeiro elemento (deve ser 0): %d\n", array_teste2[0]);
+    
+    free(array_teste);
+    free(array_teste2);
+    printf("    - Memória liberada com free()\n");
+    
+    // 7. Estruturas aninhadas
+    printf("\n[7] Demonstração de Estruturas Aninhadas:\n");
+    printf("    - Jogo contém arrays de estruturas:\n");
+    printf("      * %d Territórios\n", jogo->num_territorios);
+    printf("      * %d Continentes\n", jogo->num_continentes);
+    printf("      * %d Jogadores\n", jogo->num_jogadores);
+    printf("      * %d Missões\n", jogo->num_missoes);
+    
+    // 8. Modularização e encapsulamento
+    printf("\n[8] Demonstração de Modularização:\n");
+    printf("    - Código organizado em módulos (war.h, war.c, main.c)\n");
+    printf("    - Funções especializadas por responsabilidade:\n");
+    printf("      * Inicialização: criar_jogo(), inicializar_mapa()\n");
+    printf("      * Gameplay: atacar_territorio(), mover_exercitos()\n");
+    printf("      * Verificações: verificar_vitoria(), verificar_missao()\n");
+    printf("      * Utilidades: buscar_territorio(), imprimir_mapa()\n");
+    
+    printf("\n[Pressione ENTER para continuar]");
+    getchar();
+    getchar();
+}
 
-// inicializarTerritorios():
-// Preenche os dados iniciais de cada território no mapa (nome, cor do exército, número de tropas).
-// Esta função modifica o mapa passado por referência (ponteiro).
+void simular_ataque_completo(Jogo* jogo) {
+    printf("\n╔═══════════════════════════════════════════╗\n");
+    printf("║      SIMULAÇÃO DE ATAQUE COMPLETO         ║\n");
+    printf("╚═══════════════════════════════════════════╝\n");
+    
+    // Encontrar dois territórios vizinhos de jogadores diferentes
+    int origem_id = -1, destino_id = -1;
+    
+    for (int i = 0; i < jogo->num_territorios && origem_id == -1; i++) {
+        if (jogo->territorios[i].exercitos > 1) {
+            for (int j = 0; j < jogo->territorios[i].num_vizinhos; j++) {
+                int vizinho_id = jogo->territorios[i].vizinhos[j];
+                Territorio* vizinho = buscar_territorio(jogo, vizinho_id);
+                if (vizinho && vizinho->jogador_id != jogo->territorios[i].jogador_id) {
+                    origem_id = i;
+                    destino_id = vizinho_id;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (origem_id == -1) {
+        printf("Nenhum ataque possível no momento.\n");
+        return;
+    }
+    
+    Territorio* origem = &jogo->territorios[origem_id];
+    Territorio* destino = buscar_territorio(jogo, destino_id);
+    
+    printf("\n┌─────────────────────────────────────┐\n");
+    printf("│ CONFIGURAÇÃO DO ATAQUE              │\n");
+    printf("├─────────────────────────────────────┤\n");
+    printf("│ Atacante: %-25s │\n", origem->nome);
+    printf("│   Jogador: %-24d │\n", origem->jogador_id);
+    printf("│   Exércitos: %-22d │\n", origem->exercitos);
+    printf("├─────────────────────────────────────┤\n");
+    printf("│ Defensor: %-25s │\n", destino->nome);
+    printf("│   Jogador: %-24d │\n", destino->jogador_id);
+    printf("│   Exércitos: %-22d │\n", destino->exercitos);
+    printf("└─────────────────────────────────────┘\n");
+    
+    int exercitos_antes_ataque = origem->exercitos;
+    int exercitos_antes_defesa = destino->exercitos;
+    
+    printf("\n🎲 Iniciando ataque...\n");
+    int resultado = atacar_territorio(jogo, origem_id, destino_id, 3);
+    
+    printf("\n┌─────────────────────────────────────┐\n");
+    printf("│ RESULTADO DO COMBATE                │\n");
+    printf("├─────────────────────────────────────┤\n");
+    
+    if (resultado == 1) {
+        printf("│ ✓ TERRITÓRIO CONQUISTADO!           │\n");
+        printf("├─────────────────────────────────────┤\n");
+        printf("│ %s agora pertence        │\n", destino->nome);
+        printf("│ ao Jogador %d                        │\n", origem->jogador_id);
+    } else {
+        printf("│ ✗ ATAQUE REPELIDO                   │\n");
+        printf("├─────────────────────────────────────┤\n");
+        printf("│ Perdas do Atacante: %-15d │\n", 
+               exercitos_antes_ataque - origem->exercitos);
+        printf("│ Perdas do Defensor: %-15d │\n", 
+               exercitos_antes_defesa - destino->exercitos);
+    }
+    
+    printf("└─────────────────────────────────────┘\n");
+    
+    printf("\n[Pressione ENTER para continuar]");
+    getchar();
+    getchar();
+}
 
-// liberarMemoria():
-// Libera a memória previamente alocada para o mapa usando free.
-
-// exibirMenuPrincipal():
-// Imprime na tela o menu de ações disponíveis para o jogador.
-
-// exibirMapa():
-// Mostra o estado atual de todos os territórios no mapa, formatado como uma tabela.
-// Usa 'const' para garantir que a função apenas leia os dados do mapa, sem modificá-los.
-
-// exibirMissao():
-// Exibe a descrição da missão atual do jogador com base no ID da missão sorteada.
-
-// faseDeAtaque():
-// Gerencia a interface para a ação de ataque, solicitando ao jogador os territórios de origem e destino.
-// Chama a função simularAtaque() para executar a lógica da batalha.
-
-// simularAtaque():
-// Executa a lógica de uma batalha entre dois territórios.
-// Realiza validações, rola os dados, compara os resultados e atualiza o número de tropas.
-// Se um território for conquistado, atualiza seu dono e move uma tropa.
-
-// sortearMissao():
-// Sorteia e retorna um ID de missão aleatório para o jogador.
-
-// verificarVitoria():
-// Verifica se o jogador cumpriu os requisitos de sua missão atual.
-// Implementa a lógica para cada tipo de missão (destruir um exército ou conquistar um número de territórios).
-// Retorna 1 (verdadeiro) se a missão foi cumprida, e 0 (falso) caso contrário.
-
-// limparBufferEntrada():
-// Função utilitária para limpar o buffer de entrada do teclado (stdin), evitando problemas com leituras consecutivas de scanf e getchar.
+int main() {
+    Jogo* jogo = NULL;
+    int opcao;
+    int jogo_iniciado = 0;
+    
+    printf("\n");
+    printf("╔════════════════════════════════════════════════════════════╗\n");
+    printf("║                                                            ║\n");
+    printf("║          🎮  WAR - NOVA EDIÇÃO - TECHNOVA  🎮             ║\n");
+    printf("║                                                            ║\n");
+    printf("║      Sistema de Gerenciamento de Territórios              ║\n");
+    printf("║      Desenvolvido com Estruturas de Dados em C            ║\n");
+    printf("║                                                            ║\n");
+    printf("╚════════════════════════════════════════════════════════════╝\n");
+    
+    do {
+        exibir_menu();
+        scanf("%d", &opcao);
+        
+        switch (opcao) {
+            case 1: {
+                if (jogo) {
+                    destruir_jogo(jogo);
+                }
+                
+                printf("\n🎲 Inicializando novo jogo...\n");
+                jogo = criar_jogo();
+                
+                if (!jogo) {
+                    printf("❌ Erro ao criar o jogo!\n");
+                    break;
+                }
+                
+                printf("📍 Inicializando mapa...\n");
+                inicializar_mapa(jogo);
+                
+                printf("🎯 Inicializando missões...\n");
+                inicializar_missoes(jogo);
+                
+                printf("👥 Quantos jogadores? (2-6): ");
+                int num_jogadores;
+                scanf("%d", &num_jogadores);
+                
+                if (num_jogadores < 2) num_jogadores = 2;
+                if (num_jogadores > 6) num_jogadores = 6;
+                
+                for (int i = 0; i < num_jogadores; i++) {
+                    char nome[MAX_NOME];
+                    printf("Nome do Jogador %d: ", i + 1);
+                    scanf("%s", nome);
+                    adicionar_jogador(jogo, nome, i);
+                }
+                
+                printf("🗺️  Distribuindo territórios...\n");
+                distribuir_territorios(jogo);
+                
+                printf("⚔️  Distribuindo exércitos...\n");
+                distribuir_exercitos_iniciais(jogo);
+                
+                printf("📜 Atribuindo missões...\n");
+                atribuir_missoes(jogo);
+                
+                jogo_iniciado = 1;
+                printf("\n✅ Jogo inicializado com sucesso!\n");
+                break;
+            }
+            
+            case 2:
+                if (!jogo_iniciado) {
+                    printf("\n❌ Inicie um jogo primeiro!\n");
+                } else {
+                    imprimir_mapa(jogo);
+                }
+                break;
+            
+            case 3:
+                if (!jogo_iniciado) {
+                    printf("\n❌ Inicie um jogo primeiro!\n");
+                } else {
+                    imprimir_estatisticas(jogo);
+                }
+                break;
+            
+            case 4:
+                if (!jogo_iniciado) {
+                    printf("\n❌ Inicie um jogo primeiro!\n");
+                } else {
+                    simular_ataque_completo(jogo);
+                }
+                break;
+            
+            case 5:
+                if (!jogo_iniciado) {
+                    printf("\n❌ Inicie um jogo primeiro!\n");
+                } else {
+                    printf("\n🏆 Verificando condições de vitória...\n");
+                    int vencedor = -1;
+                    for (int i = 0; i < jogo->num_jogadores; i++) {
+                        if (verificar_vitoria(jogo, i)) {
+                            vencedor = i;
+                            break;
+                        }
+                    }
+                    
+                    if (vencedor >= 0) {
+                        printf("\n🎉 VITÓRIA! %s venceu o jogo!\n", 
+                               jogo->jogadores[vencedor].nome);
+                    } else {
+                        printf("\n⏳ Nenhum jogador venceu ainda.\n");
+                    }
+                }
+                break;
+            
+            case 6:
+                if (!jogo_iniciado) {
+                    printf("\n❌ Inicie um jogo primeiro!\n");
+                } else {
+                    demonstrar_recursos_avancados(jogo);
+                }
+                break;
+            
+            case 0:
+                printf("\n👋 Encerrando War - Nova Edição...\n");
+                if (jogo) {
+                    destruir_jogo(jogo);
+                }
+                printf("Até a próxima batalha! 🎮\n\n");
+                break;
+            
+            default:
+                printf("\n❌ Opção inválida!\n");
+        }
+        
+    } while (opcao != 0);
+    
+    return 0;
+}
